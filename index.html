@@ -1,17 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>CodePen - 8/21</title>
-  
-
-</head>
-<body>
-<!-- partial:index.partial.html -->
-<!DOCTYPE html>
 <html>
 <head>
-  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Press+Start+2P" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.5.55/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.3.10/dist/vuetify.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -20,47 +10,55 @@
     [v-cloak] {
       display: none;
     }
-    .pokemon-cards {
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      padding: 10px;
-      text-align: center;
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      padding: 0;
     }
-    .pokemon-cards img {
-      max-width: 100px;
-      height: auto;
+    .app-bar {
+      background-color: #FF7043 !important;
+      color: white !important;
+      font-family: 'Press Start 2P', cursive !important;
+    }
+    .footer {
+      background-color: #FF7043 !important;
+      color: white !important;
+      text-align: center !important;
+      padding: 10px 0 !important;
+      font-family: 'Press Start 2P', cursive !important;
+    }
+    .pokemon-btn {
+      margin: 10px 0;
+      font-family: 'Press Start 2P', cursive;
     }
     .pokemon-box {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px;
     }
-    .app-bar {
-      background-color: #FF7043;
-      color: white;
-    }
-    .footer {
-      background-color: #FF7043;
-      color: white;
-      text-align: center;
-      padding: 10px 0;
-    }
-    .pokemon-btn {
-      margin: 10px 0;
-    }
     .pokemon-card {
-      transition: transform 0.2s;
-      max-width: 200px; /* ポケモンカードの最大幅を200pxに設定 */
-      margin: auto; /* カードを中央に配置 */
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      background: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      width: 200px;
+      margin: 0 auto;
     }
+
     .pokemon-card:hover {
       transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
-    .center-content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
+
+    .pokemon-card img {
+      max-width: 200px;
+      height: auto;
+      border-radius: 50%;
     }
     .section-title {
       font-size: 24px;
@@ -68,6 +66,17 @@
       margin-top: 20px;
       margin-bottom: 10px;
       text-align: center;
+      color: #FF7043;
+      font-family: 'Press Start 2P', cursive;
+    }
+    .loading, .error {
+      text-align: center;
+      font-size: 18px;
+      color: #FF7043;
+    }
+    
+    .refresh-btn {
+    margin: 20px;
     }
   </style>
 </head>
@@ -75,7 +84,7 @@
   <div id="app">
     <v-app v-cloak>
       <v-app-bar app class="app-bar">
-        ポケモンリスト
+        Pokemon List
       </v-app-bar>
       <v-main>
         <v-container fluid>
@@ -88,51 +97,56 @@
                 class="pokemon-btn"
                 @click.prevent="fetchPokemonImage(index)"
                 :style="getButtonStyle(pokemonType)"
-                block>
+                block
+              >
                 {{ pokemonType }}
               </v-btn>
             </v-col>
           </v-row>
 
           <div v-show="isShow" class="center-content">
-            <v-col cols="12" sm="8" md="6" lg="4">
-              <v-card class="pokemon-card" v-for="pokemon in pokemonList" :key="pokemon.name">
-                <v-img
-                  :src="pokemon.image"
-                  aspect-ratio="1"
-                ></v-img>
-                <v-card-actions>
-                  <v-btn 
-                    color="success"
-                    @click="addPokemon(pokemon)"
-                  >
-                    捕まえる
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-col>
-          </div>
+    <v-col cols="12" sm="8" md="4" lg="4">
+        <v-card class="pokemon-card" v-for="pokemon in pokemonList" :key="pokemon.name">
+            <v-img
+              :src="pokemon.image"
+              aspect-ratio="1"
+            ></v-img>
+            <v-card-actions>
+                <v-btn 
+                  color=#ff7f50
+                  @click="addPokemon(pokemon)"
+                >
+                  捕まえる
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-col>
+  </div>
+          
 
           <!-- 登録したポケモンの一覧表示 -->
           <div class="box">
-            <h1>ポケモンボックス</h1>
-            <div v-if="loading">読み込み中...</div>
-            <div v-else-if="error">エラーが発生しました: {{ error }}</div>
+            <h1 class="section-title">Pokemon Box</h1>
+            <div v-if="loading" class="loading">読み込み中...</div>
+            <div v-else-if="error" class="error">エラーが発生しました: {{ error }}</div>
             <div v-else class="pokemon-box">
-              <div v-for="pokemon in pokemonBox" :key="pokemon.id" class="pokemon-cards">
+              <div v-for="pokemon in pokemonBox" :key="pokemon.id" class="pokemon-card">
                 <img :src="pokemon.imageUrl" :alt="pokemon.name">
-                <h3>{{ pokemon.japaneseName }}</h3> <!-- 日本語名を表示 -->
+                <h3>{{ pokemon.japaneseName }}</h3> 
                 <p>ID: {{ pokemon.id }}</p>
                 <p>タイプ: {{ pokemon.type }}</p>
                 <p>登録日: {{ formatDate(pokemon.dateRegistered) }}</p>
               </div>
             </div>
           </div>
+          <v-btn @click="refreshPage" color=#fafad2 class="refresh-btn">更新</v-btn>
+
         </v-container>
       </v-main>
+      
 
       <v-footer class="footer">
-        © 2024 ポケモンリスト
+        © 2024 Pokemon List
       </v-footer>
     </v-app>
   </div>
@@ -151,8 +165,8 @@
             'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark', 'fairy'
           ],
           pokemonUrl: '',
-          pokemonList: [], // ポケモンリストに名前と画像を含める
-          registeredPokemonList: [], // 登録したポケモンリスト
+          pokemonList: [], 
+          registeredPokemonList: [], 
           isShow: false,
           pokemonBox: [],
           loading: true,
@@ -160,12 +174,15 @@
         }
       },
       methods: {
+        refreshPage() {
+    window.location.reload();
+  },
         async fetchPokemonBox() {
   try {
     const response = await axios.get('https://m3h-nishizawa-functionapi.azurewebsites.net/api/GetPokemonList');
     this.pokemonBox = response.data.Items.map(pokemon => ({
       ...pokemon,
-      japaneseName: pokemon.japaneseName // 日本語名を追加
+      japaneseName: pokemon.japaneseName 
     }));
     this.loading = false;
   } catch (error) {
@@ -174,7 +191,6 @@
     console.error('Error fetching Pokemon list:', error);
   }
 },
-
         formatDate(dateString) {
           if (!dateString) return 'N/A';
           const date = new Date(dateString);
@@ -256,20 +272,17 @@
             case 'dark':
               return { backgroundColor: '#705848', color: 'white' };
             case 'fairy':
-              return { backgroundColor: '#F0B6BC', color: 'white' };
+              return { backgroundColor: '#EE99AC', color: 'white' };
             default:
-              return { backgroundColor: '#CCCCCC', color: 'black' };
+              return {};
           }
         }
       },
       mounted() {
         this.fetchPokemonBox();
       }
+      
     });
   </script>
-</body>
-</html>
-<!-- partial -->
-  
 </body>
 </html>
